@@ -4,6 +4,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import SessionLocal, engine
 import models
+import resend, os
+
+# Load API key from environment
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -44,6 +48,26 @@ def create_interest(data: Interest):
     db.add(entry)
     db.commit()
     db.refresh(entry)
+
+    # --- SEND EMAIL NOTICE ---
+    try:
+        resend.Emails.send({
+            "from": "AtlasPulse <noreply@atlaspulse.io>",
+            "to": "johnny5458283@gmail.com",  # where YOU want notifications
+            "subject": "New AtlasPulse Signup",
+            "html": f"""
+                <h2>New Signup</h2>
+                <p><strong>Name:</strong> {data.name}</p>
+                <p><strong>Email:</strong> {data.email}</p>
+                <p><strong>Role:</strong> {data.role}</p>
+                <p><strong>Property:</strong> {data.property}</p>
+                <p><strong>Funding Interest:</strong> {data.funding}</p>
+                <p><strong>Message:</strong><br>{data.message}</p>
+            """
+        })
+    except Exception as e:
+        print("Email error:", e)
+
     return {"status": "ok", "id": entry.id}
 
 # Dependency for DB session
