@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import SessionLocal, engine
 import models
@@ -44,3 +45,16 @@ def create_interest(data: Interest):
     db.commit()
     db.refresh(entry)
     return {"status": "ok", "id": entry.id}
+
+# Dependency for DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/api/list")
+def list_all(db: Session = Depends(get_db)):
+    records = db.query(models.Interest).order_by(models.Interest.id.desc()).all()
+    return records
