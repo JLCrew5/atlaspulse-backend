@@ -2,27 +2,26 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Load DATABASE_URL from environment
+# 1. Load env variable
 DATABASE_URL = os.getenv("DATABASE_URL")
-
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is missing!")
 
-# Fix old postgres:// URLs
+# 2. Fix old-style postgres URLs
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# FORCE SQLAlchemy to use psycopg3 driver instead of psycopg2
+# 3. Force psycopg3 driver (NOT psycopg2)
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# Create engine with SSL required (Render PostgreSQL requires SSL)
+# 4. Create SQLAlchemy engine (Render requires SSL)
 engine = create_engine(
     DATABASE_URL,
     connect_args={"sslmode": "require"},
     echo=False
 )
 
+# 5. Session + Base
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
