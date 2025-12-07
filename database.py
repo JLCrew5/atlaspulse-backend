@@ -1,25 +1,19 @@
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Read database URL from environment
+# Load DATABASE_URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is missing!")
-
-# Fix old postgres:// URLs to new postgresql://
+# Fix old postgres:// URLs (Render sometimes gives these)
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Required on Render (SSL enforcement)
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"sslmode": "require"},
-    echo=False
-)
+# Create the engine
+engine = create_engine(DATABASE_URL, echo=False)
 
+# Session generator
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Base class for SQLAlchemy models
 Base = declarative_base()
