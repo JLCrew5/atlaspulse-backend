@@ -195,7 +195,7 @@ def create_interest(data: Interest):
 
 
 
-# Dependency for DB session
+# Dependency for DB session ok
 def get_db():
     db = SessionLocal()
     try:
