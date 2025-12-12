@@ -207,3 +207,7 @@ def get_db():
 def list_all(db: Session = Depends(get_db)):
     records = db.query(models.Interest).order_by(models.Interest.id.desc()).all()
     return records
+
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "AtlasPulse backend is live"}
